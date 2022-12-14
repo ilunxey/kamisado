@@ -1,5 +1,5 @@
 from easyAI import TwoPlayerGame, Human_Player, AI_Player, Negamax
-import pygame, sys, time, os
+import pygame, sys, time
 pygame.init()
 
 # global variables
@@ -44,7 +44,7 @@ class Kamisado(TwoPlayerGame):
 
         self.first_move = True
         self.tower = [
-            [ (0, 7), (0, 6), (3, 5), (3, 4), (3, 3), (3, 2), (3, 1), (2, 2) ],
+            [ (0, 7), (0, 6), (0, 5), (0, 4), (0, 3), (0, 2), (0, 1), (0, 0) ],
             [ (7, 0), (7, 1), (7, 2), (7, 3), (7, 4), (7, 5), (7, 6), (7, 7) ]
         ]
         self.turn = 1
@@ -60,119 +60,65 @@ class Kamisado(TwoPlayerGame):
     # The calculation method of possible_moves is different depending on the turn.
     # The direction of movement of ai turn and my turn is opposite.
     def possible_moves(self):
-        result = []
+        #result = []
         # ----------------------FILL BELOW--------------------------
+        print("tower_to_move_coord: ", self.tower_to_move_coord)
+        print("turn: ", self.turn)
+        print("tower: ", self.tower)
         if self.is_blocked():
-            result.append(self.tower_to_move_coord)
+            result = [self.tower_to_move_coord]
+
             return result
         else:
-            block_in_vertical = []
-            block_in_left_diagonal = []
-            block_in_right_diagonal = []
+            result = []
             towers = self.tower[0] + self.tower[1]
-
             if self.turn == 1:
-                # check blocking pos in vertical
-                for r in range(self.tower_to_move_coord[0] - 1, -1, -1):
+                # vertical
+                for r in range(self.tower_to_move_coord[0]-1,-1,-1):
                     if (r, self.tower_to_move_coord[1]) in towers:
-                        block_in_vertical.append((r, self.tower_to_move_coord[1]))
                         break
-                # check blocking pos in left diagonal
-                rs = range(self.tower_to_move_coord[0] - 1, -1, -1)
-                cs = range(self.tower_to_move_coord[1] - 1, -1, -1)
+                    result.append((r, self.tower_to_move_coord[1]))
+
+                # left diagonal
+                rs = range(self.tower_to_move_coord[0]-1, -1, -1)
+                cs = range(self.tower_to_move_coord[1]-1, -1, -1)
                 for r, c in zip(rs, cs):
                     if (r, c) in towers:
-                        block_in_left_diagonal.append((r, c))
                         break
-                # check blocking pos in right diagonal
+                    result.append((r, c))
+
+                # right diagonal
                 rs = range(self.tower_to_move_coord[0] - 1, -1, -1)
                 cs = range(self.tower_to_move_coord[1] + 1, 8)
                 for r, c in zip(rs, cs):
                     if (r, c) in towers:
-                        block_in_right_diagonal.append((r, c))
                         break
-
-                # add possible pos in vertical
-                if len(block_in_vertical) != 0:
-                    for r in range(self.tower_to_move_coord[0] - 1, block_in_vertical[0][0], -1):
-                        result.append((r, self.tower_to_move_coord[1]))
-                else:
-                    for r in range(self.tower_to_move_coord[0]):
-                        result.append((r, self.tower_to_move_coord[1]))
-                # add possible pos in left diagonal
-                if len(block_in_left_diagonal) != 0:
-                    rs = range(self.tower_to_move_coord[0] - 1, block_in_left_diagonal[0][0], -1)
-                    cs = range(self.tower_to_move_coord[1] - 1, block_in_left_diagonal[0][1], -1)
-                    for r, c in zip(rs, cs):
-                        result.append((r, c))
-                else:
-                    rs = range(self.tower_to_move_coord[0] - 1, -1, -1)
-                    cs = range(self.tower_to_move_coord[1] - 1, -1, -1)
-                    for r, c in zip(rs, cs):
-                        result.append((r, c))
-                # add possible pos in right diagonal
-                if len(block_in_right_diagonal) != 0:
-                    rs = range(self.tower_to_move_coord[0] - 1, block_in_right_diagonal[0][0], -1)
-                    cs = range(self.tower_to_move_coord[1] + 1, block_in_right_diagonal[0][1])
-                    for r, c in zip(rs, cs):
-                        result.append((r, c))
-                else:
-                    rs = range(self.tower_to_move_coord[0] - 1, -1, -1)
-                    cs = range(self.tower_to_move_coord[1] + 1, 8)
-                    for r, c in zip(rs, cs):
-                        result.append((r, c))
+                    result.append((r, c))
 
             else:
-                # check blocking pos in vertical
-                for r in range(self.tower_to_move_coord[0] + 1, 8):
+                # vertical
+                for r in range(self.tower_to_move_coord[0]+1, 8):
                     if (r, self.tower_to_move_coord[1]) in towers:
-                        block_in_vertical.append((r, self.tower_to_move_coord[1]))
                         break
-                # check blocking pos in left diagonal
-                rs = range(self.tower_to_move_coord[0] + 1, 8)
-                cs = range(self.tower_to_move_coord[1] - 1, -1, -1)
-                for r, c in zip(rs, cs):
-                    if (r, c) in towers:
-                        block_in_left_diagonal.append((r, c))
-                        break
-                # check blocking pos in right diagonal
-                rs = range(self.tower_to_move_coord[0] + 1, 8)
-                cs = range(self.tower_to_move_coord[1] + 1, 8)
-                for r, c in zip(rs, cs):
-                    if (r, c) in towers:
-                        block_in_right_diagonal.append((r, c))
-                        break
+                    result.append((r, self.tower_to_move_coord[1]))
 
-                # add possible pos in vertical
-                if len(block_in_vertical) != 0:
-                    for r in range(self.tower_to_move_coord[0] + 1, block_in_vertical[0][0]):
-                        result.append((r, self.tower_to_move_coord[1]))
-                else:
-                    for r in range(self.tower_to_move_coord[0] + 1, 8):
-                        result.append((r, self.tower_to_move_coord[1]))
-                # add possible pos in left diagonal
-                if len(block_in_left_diagonal) != 0:
-                    rs = range(self.tower_to_move_coord[0] + 1, block_in_left_diagonal[0][0])
-                    cs = range(self.tower_to_move_coord[1] - 1, block_in_left_diagonal[0][0], -1)
-                    for r, c in zip(rs, cs):
-                        result.append((r, c))
-                else:
-                    rs = range(self.tower_to_move_coord[0] + 1, 8)
-                    cs = range(self.tower_to_move_coord[1] - 1, -1, -1)
-                    for r, c in zip(rs, cs):
-                        result.append((r, c))
-                # add possible pos in right diagonal
-                if len(block_in_right_diagonal) != 0:
-                    rs = range(self.tower_to_move_coord[0] + 1, block_in_right_diagonal[0][0])
-                    cs = range(self.tower_to_move_coord[1] + 1, block_in_right_diagonal[0][1])
-                    for r, c in zip(rs, cs):
-                        result.append((r, c))
-                else:
-                    rs = range(self.tower_to_move_coord[0] + 1, 8)
-                    cs = range(self.tower_to_move_coord[1] + 1, 8)
-                    for r, c in zip(rs, cs):
-                        result.append((r, c))
+                # left diagonal
+                rs = range(self.tower_to_move_coord[0]+1, 8)
+                cs = range(self.tower_to_move_coord[1]-1, -1, -1)
+                for r, c in zip(rs, cs):
+                    if (r, c) in towers:
+                        break
+                    result.append((r, c))
+
+                # right diagonal
+                rs = range(self.tower_to_move_coord[0]+1, 8)
+                cs = range(self.tower_to_move_coord[1]+1, 8)
+                for r, c in zip(rs, cs):
+                    if (r, c) in towers:
+                        break
+                    result.append((r, c))
         # ----------------------------------------------------------
+        print("p_m:", result)
         return result
 
 
@@ -273,7 +219,7 @@ class Kamisado(TwoPlayerGame):
         self.blocked_coord_list = coord
 
         # switch turn
-        self.turn = 0 if self.turn == 1 else 1
+        self.turn = 1 if self.turn == 0 else 0
 
         # set next tower and its coordinate to move
         self.tower_to_move = BOARD[coord[0]][coord[1]]
@@ -401,6 +347,7 @@ if __name__ == '__main__':
                 if kamisado.first_move and kamisado.tower_to_move_coord == coord: # reset the chosen tower
                     kamisado.reset_tower_to_move_first()
 
+
                 # MY TURN
                 elif coord in kamisado.possible_moves():
                     kamisado.play_move(coord)
@@ -411,7 +358,7 @@ if __name__ == '__main__':
                     # AI TURN
                     else:
                         draw_board(kamisado)
-
+                        print("!")
                         pygame.time.delay(500)
                         ai_move = kamisado.get_move()
                         kamisado.play_move(ai_move)
